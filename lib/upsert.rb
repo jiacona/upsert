@@ -70,7 +70,17 @@ class Upsert
       connection
     end
 
-    extend Upsert.const_get(@connection.class.name.gsub(/\W+/, '_'))
+    success = false
+    @connection.class.ancestors.each do |conn|
+      begin
+        extend Upsert.const_get(conn.name.gsub(/\W+/, '_'))
+        success = true
+        break
+      rescue Exception => e
+        next
+      end
+    end
+    throw NameError.new('uninitialized constant') unless success 
   end
 
   # Upsert a row given a selector and a document.
